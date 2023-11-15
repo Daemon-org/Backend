@@ -24,6 +24,7 @@ class Authenticate:
             "username": user.username,
             "exp": arrow.utcnow().shift(minutes=15).timestamp(),
             "iat": arrow.utcnow().timestamp(),
+            "token_type": "access"
         }
         return jwt.encode(payload, config("SECRET_KEY"), algorithm="HS256")
 
