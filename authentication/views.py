@@ -33,9 +33,10 @@ def register_user(request):
         last_name = data.get("last_name")
         phone_number = data.get("phone_number")
         password = data.get("password")
-        auth.register_user(
+        reg = auth.register_user(
             username, email, first_name, last_name, phone_number, password
         )
+        return reg
     except Exception as e:
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
@@ -49,7 +50,21 @@ def login_user(request):
         data = json.loads(request.body)
         email = data.get("email")
         password = data.get("password")
-        auth.login_user(email, password)
+        log = auth.login_user(email, password,request)
+        return log
+    except Exception as e:
+        logger.warning(str(e))
+        return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
+    
+    
+@check_fields(["email"])
+@csrf_exempt
+def verify_email(request):
+    try:
+        data = json.loads(request.body)
+        otp_code = data.get("otp_code")
+        return auth.verify_otp(otp_code)
+    
     except Exception as e:
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})

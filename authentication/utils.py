@@ -8,7 +8,7 @@ import random
 import logging
 from CRMS.settings import REDIS
 from CRMS.notif import Notify
-
+from django.contrib.auth import login, logout
 notify = Notify()
 logger = logging.getLogger(__name__)
 
@@ -17,11 +17,10 @@ class Authenticate:
     def generate_access_token(self, email):
         user = Profile.objects.get(email=email)
         payload = {
-            "user_id": user.uid,
+            "user_id": str(user.uid),
             "email": user.email,
             "first_name": user.first_name,
             "last_name": user.last_name,
-            "user_id": user.uid,
             "username": user.username,
             "exp": arrow.utcnow().shift(minutes=15).timestamp(),
             "iat": arrow.utcnow().timestamp(),
@@ -34,10 +33,11 @@ class Authenticate:
             "email": user.email,
             "first_name": user.first_name,
             "last_name": user.last_name,
-            "user_id": user.uid,
+            "user_id": str(user.uid),
             "username": user.username,
             "exp": arrow.utcnow().shift(days=7).timestamp(),
             "iat": arrow.utcnow().timestamp(),
+            "token_type": "refresh"
         }
         return jwt.encode(payload, config("SECRET_KEY"), algorithm="HS256")
 
@@ -74,19 +74,28 @@ class Authenticate:
             return JsonResponse(
                 {"success": True, "info": "OTP verification successful"}
             )
+        
+        user = Profile.objects.get(email=email)
+        if user:
+            user.email_verified = True
+            user.save(update_fields=["email_verified"])
+            return JsonResponse(
+                {"success": True, "info": "Email verified successfully"}
+            )
 
         else:
             # Invalid OTP
             return JsonResponse({"success": False, "info": "Invalid OTP"})
+        
 
     def register_user(
         self, username, email, first_name, last_name, phone_number, password
     ):
         try:
-            if len(username) < 5 or len(first_name) < 5 or len(last_name) < 5:
+            if len(username) < 4 or len(first_name) < 4 or len(last_name) < 4:
                 return JsonResponse({"success": False, "info": "input  too short"})
 
-            if password < 10:
+            if len(password) < 8:
                 return JsonResponse(
                     {
                         "success": False,
@@ -94,10 +103,10 @@ class Authenticate:
                     }
                 )
 
-            if Profile.objects.get(email=email):
+            if Profile.objects.filter(email=email):
                 return JsonResponse({"success": False, "info": "Email already exists"})
 
-            if Profile.objects.get(username=username):
+            if Profile.objects.filter(username=username):
                 return JsonResponse(
                     {"success": False, "info": "Username already exists"}
                 )
@@ -111,6 +120,7 @@ class Authenticate:
                 password=make_password(password),
             )
             if user:
+                self.send_otp(user.email)
                 return JsonResponse(
                     {"success": True, "info": "User created successfully"}
                 )
@@ -125,7 +135,7 @@ class Authenticate:
                 {"success": False, "info": "An error ocurred,try again later"}
             )
 
-    def login_user(self, email, password):
+    def login_user(self, email, password,request):
         try:
             user = Profile.objects.get(email=email)
 
@@ -134,7 +144,8 @@ class Authenticate:
                     {"success": False, "info": "User with this email does not exist."},
                 )
 
-            if check_password(password, user.password):
+            if check_password(password, user.password) and user.email_verified:
+                login(request,user)
                 access_token = self.generate_access_token(user.email)
                 refresh_token = self.generate_refresh_token(user.email)
 
@@ -154,8 +165,9 @@ class Authenticate:
             return JsonResponse(
                 {"success": False, "info": "Kindly try again --p2prx2--"}
             )
+    
 
-    def get_user_info_from_token(token):
+    def get_user_info_from_token(self,token):
         decoded_token = jwt.decode(token, config("SECRET_KEY"), algorithms=["HS256"])
         user_email = decoded_token["email"]
 
