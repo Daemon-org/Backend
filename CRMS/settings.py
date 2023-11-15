@@ -44,7 +44,7 @@ INSTALLED_APPS = [
     "ecom.apps.EcomConfig",
     "school.apps.SchoolConfig",
     "authentication.apps.AuthenticationConfig",
-    'corsheaders',
+    "corsheaders",
 ]
 
 
@@ -56,7 +56,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "CRMS.urls"

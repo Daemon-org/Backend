@@ -73,8 +73,7 @@ def verify_email(request):
     except Exception as e:
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
-    
-    
+
 
 @token_required
 @require_GET

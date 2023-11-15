@@ -42,8 +42,6 @@ def check_fields(required_fields):
     return checker
 
 
-
-
 def token_required(func):
     @wraps(func)
     def wrapper(request, *args, **kwargs):
@@ -54,7 +52,9 @@ def token_required(func):
             return JsonResponse({"error": "Access token is missing."}, status=401)
 
         try:
-            decoded_token = jwt.decode(access_token, config("SECRET_KEY"), algorithms=["HS256"])
+            decoded_token = jwt.decode(
+                access_token, config("SECRET_KEY"), algorithms=["HS256"]
+            )
             print("Decoded Token:", decoded_token)
 
             expiration_time = arrow.get(decoded_token["exp"])
@@ -64,7 +64,9 @@ def token_required(func):
                 return JsonResponse({"error": "Access token has expired."}, status=401)
 
             if token_type != "access":
-                return JsonResponse({"error": "Invalid access token passed."}, status=401)
+                return JsonResponse(
+                    {"error": "Invalid access token passed."}, status=401
+                )
 
         except jwt.ExpiredSignatureError:
             return JsonResponse({"error": "Access token has expired."}, status=401)

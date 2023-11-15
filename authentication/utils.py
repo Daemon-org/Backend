@@ -24,7 +24,7 @@ class Authenticate:
             "last_name": user.last_name,
             "username": user.username,
             "exp": arrow.utcnow().shift(minutes=15).datetime,
-            #issued at
+            # issued at
             "iat": arrow.utcnow().datetime,
             "token_type": "access",
         }
