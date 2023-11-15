@@ -45,6 +45,7 @@ class Authenticate:
         # Generate a random 5-digit OTP
         return random.randint(10000, 99999)
 
+# TODO: set expiry for token
     def send_otp(self, recipient):
         try:
             otp = self.generate_otp()
@@ -84,7 +85,6 @@ class Authenticate:
             )
 
         else:
-            # Invalid OTP
             return JsonResponse({"success": False, "info": "Invalid OTP"})
         
 
