@@ -2,7 +2,6 @@ from functools import wraps
 import arrow
 from django.http import JsonResponse
 import json
-from datetime import datetime
 import jwt
 from decouple import config
 import logging
