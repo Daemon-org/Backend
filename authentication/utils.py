@@ -171,7 +171,6 @@ class Authenticate:
                 {"success": False, "info": "Kindly try again --p2prx2--"}
             )
 
-
     def get_user_info_from_token(self, token):
         decoded_token = jwt.decode(token, config("SECRET_KEY"), algorithms=["HS256"])
         user_email = decoded_token["email"]

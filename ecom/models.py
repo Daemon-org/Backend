@@ -1,7 +1,7 @@
 from django.db import models
 import uuid
 
-
+# TODO:make sure the category passed is in the tuple
 class Product(models.Model):
     product_uid = models.UUIDField(default=uuid.uuid4, editable=False)
     product_name = models.CharField(max_length=100, db_index=True)
@@ -9,6 +9,14 @@ class Product(models.Model):
     description = models.TextField(blank=True, null=True)
     # total product in stock
     quantity = models.PositiveIntegerField(default=0)
+    CATEG = (
+        ("Grocery", "Grocery"),
+        ("Pharmacy", "Pharmacy"),
+        ("Stationary", "Stationary"),
+        ("Electronics", "Electronics"),
+        ("Others", "Others"),
+    )
+    category = models.CharField(max_length=100,choices=CATEG)
     expiry_date = models.DateTimeField(blank=True, null=True)
     manufacturer = models.CharField(max_length=100)
     supplier_info = models.CharField(max_length=100)

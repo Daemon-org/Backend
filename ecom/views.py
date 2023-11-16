@@ -13,6 +13,17 @@ logger = logging.getLogger(__name__)
 inventory = Inventory()
 
 
+@require_GET
+@token_required
+def get_products(request):
+    try:
+        products = inventory.get_products()
+        return products
+    except Exception as e:
+        logger.warning(str(e))
+        return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
+
+
 @csrf_exempt
 @require_POST
 @token_required
@@ -26,7 +37,7 @@ inventory = Inventory()
         "supplier_info",
     ]
 )
-def create_products(request):
+def add_product(request):
     try:
         data = json.loads(request.body)
         product_name = data.get("product_name")
@@ -35,9 +46,16 @@ def create_products(request):
         expiry_date = data.get("expiry_date")
         manufacturer = data.get("manufacturer")
         supplier_info = data.get("supplier_info")
+        category = data.get("category")
 
         prod = inventory.add_product(
-            product_name, price, quantity, expiry_date, manufacturer, supplier_info
+            product_name,
+            price,
+            quantity,
+            expiry_date,
+            manufacturer,
+            supplier_info,
+            category,
         )
         return prod
 
@@ -52,15 +70,23 @@ def update_product(request):
     try:
         data = json.loads(request.body)
         product_uid = data.get("product_uid")
+        product_name = data.get("product_name")
         price = data.get("price")
         quantity = data.get("quantity")
         expiry_date = data.get("expiry_date")
+        supplier_info = data.get("supplier_info")
+        description = data.get("description")
+        category = data.get("category")
 
         update = inventory.update_product(
             product_uid,
+            product_name,
             price=price,
             quantity=quantity,
-            expiry_date=expiry_date,
+            expiry=expiry_date,
+            supplier_info=supplier_info,
+            description=description,
+            category=category,
         )
 
         return update

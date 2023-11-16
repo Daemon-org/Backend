@@ -46,7 +46,6 @@ def token_required(func):
     @wraps(func)
     def wrapper(request, *args, **kwargs):
         access_token = request.headers.get("Authorization")
-        print("Access Token:", access_token)
 
         if not access_token:
             return JsonResponse({"error": "Access token is missing."}, status=401)
@@ -55,7 +54,6 @@ def token_required(func):
             decoded_token = jwt.decode(
                 access_token, config("SECRET_KEY"), algorithms=["HS256"]
             )
-            print("Decoded Token:", decoded_token)
 
             # expiration_time = arrow.get(decoded_token["exp"])
             token_type = decoded_token.get("token_type")
