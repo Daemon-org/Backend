@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from CRMS.decorators import check_fields, token_required
 from authentication.utils import Authenticate
-from django.contrib.auth import login, logout
+from django.contrib.auth import  logout
 from authentication.models import Profile
 from django.views.decorators.http import require_POST, require_GET
 from django.contrib.auth.hashers import check_password
@@ -84,3 +84,11 @@ def get_profiles(request):
     except Exception as e:
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
+
+
+@require_POST
+@csrf_exempt
+@token_required
+def logout_user(request):
+        logout(request)
+        return JsonResponse({"success": True, "info": "Logged out successfully."})

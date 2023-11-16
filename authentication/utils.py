@@ -8,7 +8,7 @@ import random
 import logging
 from CRMS.settings import REDIS
 from CRMS.notif import Notify
-from django.contrib.auth import login, logout
+from django.contrib.auth import login
 
 notify = Notify()
 logger = logging.getLogger(__name__)
@@ -170,6 +170,7 @@ class Authenticate:
             return JsonResponse(
                 {"success": False, "info": "Kindly try again --p2prx2--"}
             )
+
 
     def get_user_info_from_token(self, token):
         decoded_token = jwt.decode(token, config("SECRET_KEY"), algorithms=["HS256"])

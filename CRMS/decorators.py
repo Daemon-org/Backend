@@ -57,13 +57,13 @@ def token_required(func):
             )
             print("Decoded Token:", decoded_token)
 
-            expiration_time = arrow.get(decoded_token["exp"])
+            # expiration_time = arrow.get(decoded_token["exp"])
             token_type = decoded_token.get("token_type")
 
-            if expiration_time < arrow.now():
-                return JsonResponse({"error": "Access token has expired."}, status=401)
+            # if expiration_time < arrow.now():
+            #     return JsonResponse({"error": "Access token has expired."}, status=401)
 
-            if token_type != "access":
+            if token_type not in ["access", "refresh"]:
                 return JsonResponse(
                     {"error": "Invalid access token passed."}, status=401
                 )
