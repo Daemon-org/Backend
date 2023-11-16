@@ -1,22 +1,21 @@
 import os
 import django
-import jwt
-from CRMS.settings import REDIS
+
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "CRMS.settings")
 django.setup()
 
-from authentication.utils import Authenticate
-from decouple import config
-import string
-import random
 
+import jwt
+from CRMS.settings import REDIS
+from ecom.models import Product
+from ecom.utils import Inventory
+import arrow
 
-def gen_otp():
-    letters = string.digits
-    return "".join(random.choice(letters) for _ in range(5))
+inventory = Inventory()
 
+products = Product.objects.all()
 
-def generate_otp(self):
-    # Generate a random 5-digit OTP
-    return random.randint(10000, 99999)
+for product in products:
+    exp = inventory.check_expiry(product.product_uid)
+    print(exp.content)

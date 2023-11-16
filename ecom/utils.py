@@ -5,11 +5,15 @@ from django.http import JsonResponse
 import arrow
 from ecom.models import Product
 from django.db import transaction
+from django.shortcuts import get_object_or_404
+
+from CRMS.notif import Notify
+
 import logging
 
 logger = logging.getLogger(__name__)
 
-
+notify = Notify()
 class Inventory:
     def get_products(self):
         try:
@@ -181,20 +185,35 @@ class Inventory:
                 {"success": False, "info": "Kindly try again --p2prx2--"}
             )
 
+
+# TODO: update the code to send a list of expired product_names via mail and same with expired ones
     def check_expiry(self, product_uid):
         try:
-            product = Product.objects.get(product_uid=product_uid)
-            current_time = arrow.now()
-
+            product = get_object_or_404(Product, product_uid=product_uid)
+            exp_prod = {"product_name": product.product_name}
+            current_time = arrow.utcnow()
+            recipient = "khemikal2016@gmail.com"
+            context1 = {
+                "email": recipient,
+                "template": "expired",
+                "context": {"email": recipient, "product_name": exp_prod["product_name"]},
+            }
+            context2 = {
+                "email": recipient,
+                "template": "expiring-soon",
+                "context": {"email": recipient, "product_name": exp_prod["product_name"]},
+            }
             if product.expiry_date < current_time:
+                notify.send_sms_or_email(medium="email", recipient=recipient, context=context1)
                 return JsonResponse({"status": "Expired"})
-            if product.expiry_date <= (current_time.shift(months=6)):
+
+            if product.expiry_date <= current_time.shift(months=6):
+                notify.send_sms_or_email(medium="email", recipient=recipient, context=context2)
                 return JsonResponse({"status": "Expiring soon"})
             else:
                 return JsonResponse({"status": "Not expired"})
 
-        except Product.DoesNotExist:
-            return JsonResponse({"status": "Product not found"})
         except Exception as e:
             logger.warning(str(e))
             return JsonResponse({"status": "Error"})
+
