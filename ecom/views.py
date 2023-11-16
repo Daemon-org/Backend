@@ -47,6 +47,7 @@ def add_product(request):
         manufacturer = data.get("manufacturer")
         supplier_info = data.get("supplier_info")
         category = data.get("category")
+        description = data.get("description")
 
         prod = inventory.add_product(
             product_name,
@@ -56,6 +57,7 @@ def add_product(request):
             manufacturer,
             supplier_info,
             category,
+            description,
         )
         return prod
 
@@ -90,6 +92,47 @@ def update_product(request):
         )
 
         return update
+    except Exception as e:
+        logger.warning(str(e))
+        return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
+
+
+@require_POST
+@token_required
+def delete_product(request):
+    try:
+        data = json.loads(request.body)
+        product_uid = data.get("product_uid")
+        delete = inventory.delete_product(product_uid)
+        return delete
+
+    except Exception as e:
+        logger.warning(str(e))
+        return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
+
+
+@require_GET
+@token_required
+def search_product(request):
+    try:
+        data = json.loads(request.body)
+        query = data.get("query")
+        search = inventory.search_product(query)
+        return search
+    except Exception as e:
+        logger.warning(str(e))
+        return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
+
+
+@require_GET
+@token_required
+def filter_products(request):
+    try:
+        data = json.loads(request.body)
+        category = data.get("category")
+        manufacturer = data.get("manufacturer")
+        filter = inventory.filter_products(category, manufacturer)
+        return filter
     except Exception as e:
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})

@@ -8,9 +8,15 @@ django.setup()
 
 from authentication.utils import Authenticate
 from decouple import config
+import string
+import random
 
-auths = Authenticate()
-import arrow
 
-code = arrow.now().shift(years=4).datetime
-print(code)
+def gen_otp():
+    letters = string.digits
+    return "".join(random.choice(letters) for _ in range(5))
+
+
+def generate_otp(self):
+    # Generate a random 5-digit OTP
+    return random.randint(10000, 99999)

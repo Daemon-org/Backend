@@ -16,7 +16,7 @@ class Product(models.Model):
         ("Electronics", "Electronics"),
         ("Others", "Others"),
     )
-    category = models.CharField(max_length=100,choices=CATEG)
+    category = models.CharField(max_length=100, choices=CATEG)
     expiry_date = models.DateTimeField(blank=True, null=True)
     manufacturer = models.CharField(max_length=100)
     supplier_info = models.CharField(max_length=100)

@@ -43,6 +43,7 @@ class Inventory:
         manufacturer,
         supplier_info,
         category,
+        description,
     ):
         try:
             if Product.objects.filter(product_name=product_name).exists():
@@ -57,6 +58,7 @@ class Inventory:
                 manufacturer=manufacturer,
                 supplier_info=supplier_info,
                 category=category,
+                description=description,
                 added_on=arrow.now().datetime,
             )
 
@@ -111,3 +113,88 @@ class Inventory:
             return JsonResponse(
                 {"success": False, "info": " Unable to u[pdate product"}, status=500
             )
+
+    def delete_product(self, product_uid):
+        try:
+            product = Product.objects.get(product_uid=product_uid)
+            product.delete()
+            return JsonResponse({"success": "Product deleted successfully"}, status=200)
+        except Exception as e:
+            logger.warning(str(e))
+            return JsonResponse(
+                {"success": False, "info": "Unable to delete product"}, status=500
+            )
+
+    def search_product(self, query):
+        try:
+            products = Product.objects.values(
+                "product_uid",
+                "product_name",
+                "price",
+                "quantity",
+                "description",
+                "category",
+                "expiry_date",
+                "manufacturer",
+                "supplier_info",
+                "added_on",
+            ).filter(product_name__icontains=query)
+            if products:
+                return JsonResponse({"success": True, "data": list(products)})
+            else:
+                return JsonResponse({"success": False, "info": "No products found"})
+        except Exception as e:
+            logger.warning(str(e))
+            return JsonResponse(
+                {"success": False, "info": "Kindly try again --p2prx2--"}
+            )
+
+    def filter_products(self, category=None, manufacturer=None):
+        try:
+            filter_params = {}
+            if category:
+                filter_params["category"] = category
+            if manufacturer:
+                filter_params["manufacturer"] = manufacturer
+
+            products = Product.objects.values(
+                "product_uid",
+                "product_name",
+                "price",
+                "quantity",
+                "description",
+                "category",
+                "expiry_date",
+                "manufacturer",
+                "supplier_info",
+                "added_on",
+            ).filter(**filter_params)
+
+            if products:
+                return JsonResponse({"success": True, "data": list(products)})
+            else:
+                return JsonResponse({"success": False, "info": "No products found"})
+
+        except Exception as e:
+            logger.warning(str(e))
+            return JsonResponse(
+                {"success": False, "info": "Kindly try again --p2prx2--"}
+            )
+
+    def check_expiry(self, product_uid):
+        try:
+            product = Product.objects.get(product_uid=product_uid)
+            current_time = arrow.now()
+
+            if product.expiry_date < current_time:
+                return JsonResponse({"status": "Expired"})
+            if product.expiry_date <= (current_time.shift(months=6)):
+                return JsonResponse({"status": "Expiring soon"})
+            else:
+                return JsonResponse({"status": "Not expired"})
+
+        except Product.DoesNotExist:
+            return JsonResponse({"status": "Product not found"})
+        except Exception as e:
+            logger.warning(str(e))
+            return JsonResponse({"status": "Error"})
