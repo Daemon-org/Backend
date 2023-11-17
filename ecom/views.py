@@ -2,6 +2,7 @@ from django.shortcuts import render
 from CRMS.decorators import check_fields, token_required
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_GET
+from CRMS.settings import REDIS
 from ecom.utils import Inventory
 from django.http import JsonResponse
 import json
@@ -139,3 +140,15 @@ def filter_products(request):
 
 
 # TODO:add an endpoint for fetching expired and almost expired products from cache
+@require_GET
+@token_required
+def fetch_expired_products(request):
+    try:
+        expired = REDIS.get("expired-products")
+        if expired:
+            expired = json.loads(expired)
+            return JsonResponse({"success": True, "info": expired})
+        return expired
+    except Exception as e:
+        logger.warning(str(e))
+        return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
