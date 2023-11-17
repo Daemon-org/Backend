@@ -1,12 +1,17 @@
+from datetime import datetime
+from django.utils import timezone
+from dateutil.relativedelta import relativedelta
+import json
 from django.http import JsonResponse
 import arrow
+from CRMS.settings import REDIS
 from ecom.models import Product
 from django.http import JsonResponse
 import arrow
 from ecom.models import Product
 from django.db import transaction
 from django.shortcuts import get_object_or_404
-
+from django.db.models import Q
 from CRMS.notif import Notify
 
 import logging
@@ -14,6 +19,11 @@ import logging
 logger = logging.getLogger(__name__)
 
 notify = Notify()
+
+"""
+TODO:Give a monthly breakdown on purchases registered along with the total amount sold
+that can be printed as pdf or word doc 
+"""
 class Inventory:
     def get_products(self):
         try:
@@ -186,34 +196,45 @@ class Inventory:
             )
 
 
-# TODO: update the code to send a list of expired product_names via mail and same with expired ones
-    def check_expiry(self, product_uid):
-        try:
-            product = get_object_or_404(Product, product_uid=product_uid)
-            exp_prod = {"product_name": product.product_name}
-            current_time = arrow.utcnow()
-            recipient = "khemikal2016@gmail.com"
-            context1 = {
-                "email": recipient,
-                "template": "expired",
-                "context": {"email": recipient, "product_name": exp_prod["product_name"]},
-            }
-            context2 = {
-                "email": recipient,
-                "template": "expiring-soon",
-                "context": {"email": recipient, "product_name": exp_prod["product_name"]},
-            }
-            if product.expiry_date < current_time:
-                notify.send_sms_or_email(medium="email", recipient=recipient, context=context1)
-                return JsonResponse({"status": "Expired"})
+# TODO: update the code to fetch expired or expiring products and store them in a cache 
+    
 
-            if product.expiry_date <= current_time.shift(months=6):
-                notify.send_sms_or_email(medium="email", recipient=recipient, context=context2)
+    
+    def check_expiry(self):
+        try:
+            expired_products = []
+            expiring_products = []
+    
+            products = Product.objects.all()
+    
+            for product in products:
+                if product.expiry_date < timezone.now():
+                    logger.warning(product)
+                    json_data = {
+                        "product_name": product.product_name,
+                        "price": str(product.price),
+                        "expiry_date": product.expiry_date.isoformat(),
+                    }
+                    expired_products.append(json_data)
+                if product.expiry_date <= (timezone.now() + relativedelta(months=6)):
+                    json_data = {
+                        "product_name": product.product_name,
+                        "price": str(product.price),
+                        "expiry_date": product.expiry_date.isoformat(),
+                    }
+                    expiring_products.append(json_data)
+    
+            if expired_products:
+                REDIS.set("expired-products", json.dumps(expired_products))
+                logger.info(f"Found {len(expired_products)} expired products.")
+                return JsonResponse({"status": "Expired"})
+            elif expiring_products:
+                REDIS.set("expiring-products", json.dumps(expiring_products))
+                logger.info(f"Found {len(expiring_products)} expiring soon products.")
                 return JsonResponse({"status": "Expiring soon"})
             else:
                 return JsonResponse({"status": "Not expired"})
-
+    
         except Exception as e:
             logger.warning(str(e))
             return JsonResponse({"status": "Error"})
-

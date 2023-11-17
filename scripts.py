@@ -1,3 +1,4 @@
+import json
 import os
 import django
 
@@ -17,5 +18,8 @@ inventory = Inventory()
 products = Product.objects.all()
 
 for product in products:
-    exp = inventory.check_expiry(product.product_uid)
+    exp = inventory.check_expiry()
     print(exp.content)
+
+# red = REDIS.get("expiring-products")
+# print(json.loads(red))
