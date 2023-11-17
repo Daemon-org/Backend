@@ -195,7 +195,7 @@ class Inventory:
                 {"success": False, "info": "Kindly try again --p2prx2--"}
             )
 
-    
+# TODO: update the code to also cache all products near expiry    
     def check_expiry(self):
         try:
             expired_products = []

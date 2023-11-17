@@ -136,3 +136,6 @@ def filter_products(request):
     except Exception as e:
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
+
+
+# TODO:add an endpoint for fetching expired and almost expired products from cache
