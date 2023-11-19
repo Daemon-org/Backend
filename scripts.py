@@ -15,11 +15,9 @@ import arrow
 
 inventory = Inventory()
 
-products = Product.objects.all()
 
-for product in products:
-    exp = inventory.check_expiry()
-    print(exp.content)
+# exp = inventory.check_expiration()
+# print(exp)
 
-# red = REDIS.get("expiring-products")
-# print(json.loads(red))
+red = REDIS.get("almost-expired-products")
+print(json.loads(red))

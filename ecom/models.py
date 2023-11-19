@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 
+
 class Product(models.Model):
     product_uid = models.UUIDField(default=uuid.uuid4, editable=False)
     product_name = models.CharField(max_length=100, db_index=True)

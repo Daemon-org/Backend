@@ -9,4 +9,5 @@ urlpatterns = [
     path("search_product/", search_product),
     path("filter_products/", filter_products),
     path("expired_products/", fetch_expired_products),
+    path("almost_expired_products/", fetch_almost_expired_products),
 ]

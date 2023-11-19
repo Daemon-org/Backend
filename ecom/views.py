@@ -152,3 +152,17 @@ def fetch_expired_products(request):
     except Exception as e:
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
+
+
+@require_GET
+@token_required
+def fetch_almost_expired_products(request):
+    try:
+        almost_expired = REDIS.get("almost-expired-products")
+        if almost_expired:
+            almost_expired = json.loads(almost_expired)
+            return JsonResponse({"success": True, "info": almost_expired})
+        return almost_expired
+    except Exception as e:
+        logger.warning(str(e))
+        return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})

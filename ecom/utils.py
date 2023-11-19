@@ -1,4 +1,4 @@
-from datetime import datetime
+import datetime
 from django.utils import timezone
 from dateutil.relativedelta import relativedelta
 import json
@@ -24,6 +24,8 @@ notify = Notify()
 TODO:Give a monthly breakdown on purchases registered along with the total amount sold
 that can be printed as pdf or word doc 
 """
+
+
 class Inventory:
     def get_products(self):
         try:
@@ -195,42 +197,35 @@ class Inventory:
                 {"success": False, "info": "Kindly try again --p2prx2--"}
             )
 
-# TODO: update the code to also cache all products near expiry    
-    def check_expiry(self):
-        try:
-            expired_products = []
-            expiring_products = []
-    
-            products = Product.objects.all()
-    
-            for product in products:
-                if product.expiry_date < timezone.now():
-                    logger.warning(product)
-                    json_data = {
-                        "product_name": product.product_name,
-                        "price": str(product.price),
-                        "expiry_date": product.expiry_date.isoformat(),
-                    }
-                    expired_products.append(json_data)
-                if product.expiry_date <= (timezone.now() + relativedelta(months=6)):
-                    json_data = {
-                        "product_name": product.product_name,
-                        "price": str(product.price),
-                        "expiry_date": product.expiry_date.isoformat(),
-                    }
-                    expiring_products.append(json_data)
-    
-            if expired_products:
+    def check_expiration(self):
+        current_date = datetime.datetime.now().date()
+        products = Product.objects.all()
+        expired_products = []
+        expiring_products = []
+
+        for product in products:
+            expiry_date = product.expiry_date.date()
+            six_months_from_now = current_date + relativedelta(months=6)
+
+            if current_date > expiry_date:
+                json_data = {
+                    "product_name": product.product_name,
+                    "price": str(product.price),
+                    "expiry_date": product.expiry_date.date().isoformat(),
+                }
+                expired_products.append(json_data)
                 REDIS.set("expired-products", json.dumps(expired_products))
-                logger.info(f"Found {len(expired_products)} expired products.")
-                return JsonResponse({"status": "Expired"})
-            elif expiring_products:
-                REDIS.set("expiring-products", json.dumps(expiring_products))
-                logger.info(f"Found {len(expiring_products)} expiring soon products.")
-                return JsonResponse({"status": "Expiring soon"})
-            else:
-                return JsonResponse({"status": "Not expired"})
-    
-        except Exception as e:
-            logger.warning(str(e))
-            return JsonResponse({"status": "Error"})
+
+            if current_date <= expiry_date <= six_months_from_now:
+                time_until_expiration = (expiry_date - current_date).days
+                json_data = {
+                    "product_name": product.product_name,
+                    "price": str(product.price),
+                    "expiry_date": product.expiry_date.date().isoformat(),
+                    "time_until_expiration": f"{time_until_expiration} days",
+                }
+                expiring_products.append(json_data)
+                REDIS.set("almost-expired-products", json.dumps(expiring_products))
+
+        logger.warning(f"Found {len(expired_products)} expired products.")
+        logger.warning(f"Found {len(expiring_products)} expiring soon products.")
