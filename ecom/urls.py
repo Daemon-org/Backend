@@ -10,4 +10,7 @@ urlpatterns = [
     path("filter_products/", filter_products),
     path("expired_products/", fetch_expired_products),
     path("almost_expired_products/", fetch_almost_expired_products),
+    path("register_purchase/", register_purchase),
+    path("total_purchases/", fetch_purchases),
+    path("generate_report/", generate_report),
 ]

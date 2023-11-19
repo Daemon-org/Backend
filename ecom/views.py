@@ -144,6 +144,7 @@ def filter_products(request):
 @token_required
 def fetch_expired_products(request):
     try:
+        inventory.check_expiration()
         expired = REDIS.get("expired-products")
         if expired:
             expired = json.loads(expired)
@@ -158,11 +159,49 @@ def fetch_expired_products(request):
 @token_required
 def fetch_almost_expired_products(request):
     try:
+        inventory.check_expiration()
         almost_expired = REDIS.get("almost-expired-products")
         if almost_expired:
             almost_expired = json.loads(almost_expired)
             return JsonResponse({"success": True, "info": almost_expired})
         return almost_expired
+    except Exception as e:
+        logger.warning(str(e))
+        return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
+
+
+@csrf_exempt
+@require_POST
+@token_required
+@check_fields(["product_uid", "quantity"])
+def register_purchase(request):
+    try:
+        data = json.loads(request.body)
+        product_uid = data.get("product_uid")
+        quantity = data.get("quantity")
+        purchase = inventory.register_purchase(product_uid, quantity)
+        return purchase
+    except Exception as e:
+        logger.warning(str(e))
+        return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
+
+
+@require_GET
+@token_required
+def fetch_purchases(request):
+    try:
+        purchases = inventory.fetch_total_purchases()
+        return purchases
+    except Exception as e:
+        logger.warning(str(e))
+        return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
+
+
+@require_GET
+def generate_report(request):
+    try:
+        report = inventory.print_annual_and_monthly_purchases()
+        return report
     except Exception as e:
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})

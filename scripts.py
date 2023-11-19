@@ -16,8 +16,5 @@ import arrow
 inventory = Inventory()
 
 
-# exp = inventory.check_expiration()
-# print(exp)
-
-red = REDIS.get("almost-expired-products")
-print(json.loads(red))
+exp = inventory.print_annual_and_monthly_purchases()
+print(exp)

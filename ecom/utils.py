@@ -8,12 +8,12 @@ from CRMS.settings import REDIS
 from ecom.models import Product
 from django.http import JsonResponse
 import arrow
-from ecom.models import Product
+from ecom.models import Product, Purchase, History
 from django.db import transaction
-from django.shortcuts import get_object_or_404
-from django.db.models import Q
 from CRMS.notif import Notify
-
+from django.db import transaction
+from django.db.models import Sum
+from django.db.models.functions import TruncMonth, TruncYear
 import logging
 
 logger = logging.getLogger(__name__)
@@ -127,7 +127,7 @@ class Inventory:
         except Exception as e:
             logger.warning(str(e))
             return JsonResponse(
-                {"success": False, "info": " Unable to u[pdate product"}, status=500
+                {"success": False, "info": " Unable to update product"}, status=500
             )
 
     def delete_product(self, product_uid):
@@ -217,6 +217,7 @@ class Inventory:
                 REDIS.set("expired-products", json.dumps(expired_products))
 
             if current_date <= expiry_date <= six_months_from_now:
+
                 time_until_expiration = (expiry_date - current_date).days
                 json_data = {
                     "product_name": product.product_name,
@@ -229,3 +230,97 @@ class Inventory:
 
         logger.warning(f"Found {len(expired_products)} expired products.")
         logger.warning(f"Found {len(expiring_products)} expiring soon products.")
+
+    def fetch_total_purchases(self):
+        purchases = Purchase.objects.values("product__product_name").annotate(
+            total_purchase_amount=Sum("purchase_price"),
+            total_quantities_sold=Sum("quantity"),
+        )
+        if purchases:
+            return JsonResponse({"success": True, "data": list(purchases)})
+        else:
+            return JsonResponse({"success": False, "info": "No purchases found"})
+
+    def print_annual_and_monthly_purchases(self):
+        current_month_purchases = (
+            Purchase.objects.values("product__product_name")
+            .annotate(month=TruncMonth("date"))
+            .values("product__product_name", "month")
+            .annotate(
+                total_purchase_amount=Sum("purchase_price"),
+                total_quantities_sold=Sum("quantity"),
+            )
+            .order_by("product__product_name", "month")
+        )
+
+        current_year_purchases = (
+            Purchase.objects.values("product__product_name")
+            .annotate(year=TruncYear("date"))
+            .values("product__product_name", "year")
+            .annotate(
+                total_purchase_amount=Sum("purchase_price"),
+                total_quantities_sold=Sum("quantity"),
+            )
+            .order_by("product__product_name", "year")
+        )
+
+        if current_month_purchases or current_year_purchases:
+            return JsonResponse(
+                {
+                    "success": True,
+                    "current_month_purchases": list(current_month_purchases),
+                    "current_year_purchases": list(current_year_purchases),
+                }
+            )
+        else:
+            return JsonResponse({"success": False, "info": "No purchases found"})
+
+    def register_purchase(self, prod_uid, quantity):
+        try:
+            product = Product.objects.get(product_uid=prod_uid)
+
+            if product.quantity < int(quantity):
+                return JsonResponse({"success": False, "info": "Insufficient stock"})
+
+            if not product.on_sale:
+                return JsonResponse(
+                    {"success": False, "info": "Product is not on sale"}
+                )
+
+            exp_prod = REDIS.get("expired-products")
+            expired = json.loads(exp_prod)
+
+            cached_products = [
+                {
+                    "product_name": item["product_name"],
+                    "price": item["price"],
+                    "expiry_date": item["expiry_date"],
+                }
+                for item in expired
+            ]
+
+            if product.product_name in [
+                item["product_name"] for item in cached_products
+            ]:
+                return JsonResponse({"success": False, "info": "Product is expired"})
+
+            with transaction.atomic():
+                product.quantity -= int(quantity)
+                purchase_price = product.price * int(quantity)
+                purchase = Purchase.objects.create(
+                    product=product, quantity=quantity, purchase_price=purchase_price
+                )
+                product.save(update_fields=["quantity"])
+
+            if purchase:
+                return JsonResponse({"success": True, "info": "Purchase successful"})
+            else:
+                return JsonResponse({"success": False, "info": "Purchase failed"})
+
+        except Product.DoesNotExist:
+            return JsonResponse({"success": False, "info": "Product not found"})
+        except Exception as e:
+            logger.warning(str(e))
+            return JsonResponse(
+                {"success": False, "info": "Kindly try again --p2prx2--"}
+            )
