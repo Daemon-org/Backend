@@ -16,5 +16,5 @@ import arrow
 inventory = Inventory()
 
 
-exp = inventory.print_annual_and_monthly_purchases()
-print(exp)
+exp = inventory.sales_analytics()
+print(exp.content)

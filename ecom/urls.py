@@ -13,4 +13,6 @@ urlpatterns = [
     path("register_purchase/", register_purchase),
     path("total_purchases/", fetch_purchases),
     path("generate_report/", generate_report),
+    path("fetch_lowstock/", get_lowstock),
+    path("analytics/",get_analytics)
 ]

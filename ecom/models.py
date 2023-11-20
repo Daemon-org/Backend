@@ -38,6 +38,7 @@ class Product(models.Model):
 
 # to record purchases made
 class Purchase(models.Model):
+    purchase_uid = models.UUIDField(default=uuid.uuid4, editable=False)
     product = models.ForeignKey(Product, on_delete=models.DO_NOTHING)
     quantity = models.PositiveIntegerField(default=0)
     purchase_price = models.DecimalField(max_digits=10, decimal_places=2)

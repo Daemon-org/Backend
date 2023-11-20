@@ -12,7 +12,7 @@ from ecom.models import Product, Purchase, History
 from django.db import transaction
 from CRMS.notif import Notify
 from django.db import transaction
-from django.db.models import Sum
+from django.db.models import Sum,Avg,Count
 from django.db.models.functions import TruncMonth, TruncYear
 import logging
 
@@ -21,8 +21,10 @@ logger = logging.getLogger(__name__)
 notify = Notify()
 
 """
-TODO:Give a monthly breakdown on purchases registered along with the total amount sold
-that can be printed as pdf or word doc 
+
+TODO:Method to generate a report of low stock products  
+     Method to generate sales analytics
+     Such as the best-selling products, top revenue-generating products, 
 """
 
 
@@ -324,3 +326,44 @@ class Inventory:
             return JsonResponse(
                 {"success": False, "info": "Kindly try again --p2prx2--"}
             )
+        
+    def fetch_lowstock(self):
+        try:
+            products = Product.objects.values("product_name", "quantity").filter(quantity__lt=10)
+            if products:
+                return JsonResponse({"success": True, "data": list(products)})
+            else:
+                return JsonResponse({"success": False, "info": "No products found"})
+        
+        except Exception as e:
+            logger.warning(str(e))
+            return JsonResponse({"success": False, "info": "An error occurred"})
+
+    def sales_analytics(self):
+        try:
+            purchases = Purchase.objects.values("product__product_name").annotate(
+                total_purchase_amount=Sum("purchase_price"),
+                total_quantities_sold=Sum("quantity"),
+            ).order_by("-total_quantities_sold", "-total_purchase_amount")
+
+            if purchases:
+                best_selling_products = purchases[:5]  # Get the top 5 best-selling products
+
+                # Additional analytics
+                total_revenue = sum(item['total_purchase_amount'] for item in purchases)
+                average_order_value = total_revenue / len(purchases) if len(purchases) > 0 else 0
+
+                return JsonResponse(
+                    {
+                        "success": True,
+                        "best_selling_products": list(best_selling_products),
+                        "total_revenue": total_revenue,
+                        "average_order_value": f"{average_order_value:.2f}",
+                    }
+                )
+            else:
+                return JsonResponse({"success": False, "info": "No purchases found"})
+
+        except Exception as e:
+            logger.exception("An error occurred: %s", str(e))
+            return JsonResponse({"success": False, "info": "An error occurred"})

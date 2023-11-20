@@ -198,10 +198,31 @@ def fetch_purchases(request):
 
 
 @require_GET
+@token_required
 def generate_report(request):
     try:
         report = inventory.print_annual_and_monthly_purchases()
         return report
+    except Exception as e:
+        logger.warning(str(e))
+        return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
+    
+
+@require_GET
+@token_required
+def get_lowstock(request):
+    try:
+        lowstock = inventory.fetch_lowstock()
+        return lowstock
+    except Exception as e:
+        logger.warning(str(e))
+        return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
+
+@require_GET
+def get_analytics(self):
+    try:
+        analytics = inventory.sales_analytics()
+        return analytics
     except Exception as e:
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
