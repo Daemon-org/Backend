@@ -12,7 +12,7 @@ from ecom.models import Product, Purchase, History
 from django.db import transaction
 from CRMS.notif import Notify
 from django.db import transaction
-from django.db.models import Sum,Avg,Count
+from django.db.models import Sum, Avg, Count
 from django.db.models.functions import TruncMonth, TruncYear
 import logging
 
@@ -326,32 +326,42 @@ class Inventory:
             return JsonResponse(
                 {"success": False, "info": "Kindly try again --p2prx2--"}
             )
-        
+
     def fetch_lowstock(self):
         try:
-            products = Product.objects.values("product_name", "quantity").filter(quantity__lt=10)
+            products = Product.objects.values("product_name", "quantity").filter(
+                quantity__lt=10
+            )
             if products:
                 return JsonResponse({"success": True, "data": list(products)})
             else:
                 return JsonResponse({"success": False, "info": "No products found"})
-        
+
         except Exception as e:
             logger.warning(str(e))
             return JsonResponse({"success": False, "info": "An error occurred"})
 
     def sales_analytics(self):
         try:
-            purchases = Purchase.objects.values("product__product_name").annotate(
-                total_purchase_amount=Sum("purchase_price"),
-                total_quantities_sold=Sum("quantity"),
-            ).order_by("-total_quantities_sold", "-total_purchase_amount")
+            purchases = (
+                Purchase.objects.values("product__product_name")
+                .annotate(
+                    total_purchase_amount=Sum("purchase_price"),
+                    total_quantities_sold=Sum("quantity"),
+                )
+                .order_by("-total_quantities_sold", "-total_purchase_amount")
+            )
 
             if purchases:
-                best_selling_products = purchases[:5]  # Get the top 5 best-selling products
+                best_selling_products = purchases[
+                    :5
+                ]  # Get the top 5 best-selling products
 
                 # Additional analytics
-                total_revenue = sum(item['total_purchase_amount'] for item in purchases)
-                average_order_value = total_revenue / len(purchases) if len(purchases) > 0 else 0
+                total_revenue = sum(item["total_purchase_amount"] for item in purchases)
+                average_order_value = (
+                    total_revenue / len(purchases) if len(purchases) > 0 else 0
+                )
 
                 return JsonResponse(
                     {

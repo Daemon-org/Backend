@@ -15,7 +15,6 @@ inventory = Inventory()
 
 
 @require_GET
-@token_required
 def get_products(request):
     try:
         products = inventory.get_products()
@@ -69,6 +68,7 @@ def add_product(request):
 
 @csrf_exempt
 @require_POST
+@token_required
 def update_product(request):
     try:
         data = json.loads(request.body)
@@ -112,7 +112,7 @@ def delete_product(request):
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
 
 
-@require_GET
+@require_POST
 @token_required
 def search_product(request):
     try:
@@ -126,7 +126,6 @@ def search_product(request):
 
 
 @require_GET
-@token_required
 def filter_products(request):
     try:
         data = json.loads(request.body)
@@ -139,9 +138,7 @@ def filter_products(request):
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
 
 
-# TODO:add an endpoint for fetching expired and almost expired products from cache
 @require_GET
-@token_required
 def fetch_expired_products(request):
     try:
         inventory.check_expiration()
@@ -156,7 +153,6 @@ def fetch_expired_products(request):
 
 
 @require_GET
-@token_required
 def fetch_almost_expired_products(request):
     try:
         inventory.check_expiration()
@@ -187,7 +183,6 @@ def register_purchase(request):
 
 
 @require_GET
-@token_required
 def fetch_purchases(request):
     try:
         purchases = inventory.fetch_total_purchases()
@@ -198,7 +193,6 @@ def fetch_purchases(request):
 
 
 @require_GET
-@token_required
 def generate_report(request):
     try:
         report = inventory.print_annual_and_monthly_purchases()
@@ -206,10 +200,9 @@ def generate_report(request):
     except Exception as e:
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
-    
+
 
 @require_GET
-@token_required
 def get_lowstock(request):
     try:
         lowstock = inventory.fetch_lowstock()
@@ -217,6 +210,7 @@ def get_lowstock(request):
     except Exception as e:
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
+
 
 @require_GET
 def get_analytics(self):
