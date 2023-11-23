@@ -15,6 +15,9 @@ from django.db import transaction
 from django.db.models import Sum, Avg, Count
 from django.db.models.functions import TruncMonth, TruncYear
 import logging
+from docx import Document
+from docx.shared import Pt
+from docx.shared import Inches
 
 logger = logging.getLogger(__name__)
 
@@ -314,7 +317,9 @@ class Inventory:
                 )
                 product.save(update_fields=["quantity"])
 
+
             if purchase:
+                self.generate_invoice(purchase_uid=purchase.purchase_uid, cashier="admin")
                 return JsonResponse({"success": True, "info": "Purchase successful"})
             else:
                 return JsonResponse({"success": False, "info": "Purchase failed"})
@@ -377,3 +382,42 @@ class Inventory:
         except Exception as e:
             logger.exception("An error occurred: %s", str(e))
             return JsonResponse({"success": False, "info": "An error occurred"})
+    
+    #TODO: add an endpoint to get invoices whenever a purchase is made
+    
+    def generate_invoice(self, purchase_uid, cashier):
+        try:
+            purchase = Purchase.objects.select_related('product').get(purchase_uid=purchase_uid)
+            if purchase:
+                product_name = purchase.product.product_name
+                quantity = purchase.quantity
+                purchase_price = purchase.purchase_price
+                cashier = cashier
+                document = Document()
+                document.add_heading('Payment invoice', 0)
+    
+                records = [
+                    ('Qty', 'Product', 'Price', 'Total'),  # Table header
+                    (quantity, product_name,purchase_price/quantity, purchase_price),  # Purchase details
+                ]
+    
+                table = document.add_table(rows=len(records), cols=4)
+                for i, row in enumerate(records):
+                    row_cells = table.rows[i].cells
+                    for j, value in enumerate(row):
+                        row_cells[j].text = str(value)
+                
+               
+                document.add_paragraph('Signature: _____________________')
+
+                document.add_paragraph(f'Cashier: {cashier}')
+                
+                document.add_page_break()
+    
+                document.save('purchase.docx')
+    
+        except Exception as e:
+            logger.warning(str(e))
+            return JsonResponse(
+                {"success": False, "info": "Kindly try again "}
+            )
