@@ -59,18 +59,15 @@ def token_required(func):
             logger.warning(expiration_time)
             token_type = decoded_token.get("token_type")
 
-            if expiration_time < arrow.now():
-                return JsonResponse({"error": "Access token has expired."}, status=401)
-
             if token_type not in ["access", "refresh"]:
                 return JsonResponse(
                     {"error": "Invalid access token passed."}, status=401
                 )
 
         except jwt.ExpiredSignatureError:
-            return JsonResponse({"error": "Access token has expired."}, status=401)
+            return JsonResponse({"error": "Access token has already expired."}, status=401)
         except jwt.InvalidTokenError as e:
-            print("Invalid token:", str(e))
+            logger.warning("Invalid token:", str(e))
             return JsonResponse({"error": "Invalid access token."}, status=401)
 
         return func(request, *args, **kwargs)

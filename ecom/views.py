@@ -220,5 +220,3 @@ def get_analytics(self):
     except Exception as e:
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
-
-

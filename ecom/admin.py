@@ -7,7 +7,7 @@ from ecom.models import Product, Purchase, History
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = tuple(field.name for field in Product._meta.fields)
-    search_fields = ["product_name", "description","manufacturer"]
+    search_fields = ["product_name", "description", "manufacturer"]
 
 
 @admin.register(Purchase)

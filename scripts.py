@@ -17,7 +17,3 @@ inventory = Inventory()
 from dateutil.relativedelta import relativedelta
 
 
-
-bb = arrow.get('2023-11-23T10:10:05+00:00').humanize()
-
-print(bb)
