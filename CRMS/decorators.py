@@ -65,7 +65,9 @@ def token_required(func):
                 )
 
         except jwt.ExpiredSignatureError:
-            return JsonResponse({"error": "Access token has already expired."}, status=401)
+            return JsonResponse(
+                {"error": "Access token has already expired."}, status=401
+            )
         except jwt.InvalidTokenError as e:
             logger.warning("Invalid token:", str(e))
             return JsonResponse({"error": "Invalid access token."}, status=401)

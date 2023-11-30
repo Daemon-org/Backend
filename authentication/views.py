@@ -9,7 +9,6 @@ from authentication.utils import Authenticate
 from django.contrib.auth import logout
 from authentication.models import Profile
 from django.views.decorators.http import require_POST, require_GET
-from django.contrib.auth.hashers import check_password
 
 import logging
 

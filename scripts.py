@@ -15,5 +15,3 @@ import arrow
 
 inventory = Inventory()
 from dateutil.relativedelta import relativedelta
-
-
