@@ -68,3 +68,8 @@ class StudentFeeAdmin(admin.ModelAdmin):
 class SchoolExpenseAdmin(admin.ModelAdmin):
     list_display = tuple(field.name for field in SchoolExpense._meta.fields)
     search_fields = ["description", "auth_by"]
+
+@admin.register(ClassRoom)
+class ClassRoomAdmin(admin.ModelAdmin):
+    list_display = tuple(field.name for field in ClassRoom._meta.fields)
+    search_fields = ["grade"]

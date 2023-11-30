@@ -31,7 +31,7 @@ class Tutor(models.Model):
         ("Active", "Active"),
         ("Inactive", "Inactive"),
     )
-    status = models.CharField(max_length=100, choices=STATUS)
+    status = models.CharField(max_length=100, choices=STATUS,default="Active")
     department = models.ForeignKey(Department, on_delete=models.DO_NOTHING)
 
     def __str__(self):
@@ -45,7 +45,7 @@ class Employees(models.Model):
         ("Active", "Active"),
         ("Inactive", "Inactive"),
     )
-    status = models.CharField(max_length=100, choices=STATUS)
+    status = models.CharField(max_length=100, choices=STATUS,default="Active")
     department = models.ForeignKey(Department, on_delete=models.DO_NOTHING)
 
     def __str__(self):
@@ -61,7 +61,7 @@ class ClassRoom(models.Model):
         ("Active", "Active"),
         ("Inactive", "Inactive"),
     )
-    status = models.CharField(max_length=100, choices=STATUS)
+    status = models.CharField(max_length=100, choices=STATUS,default="Active")
 
     def __str__(self):
         return self.grade
@@ -81,7 +81,7 @@ class Students(models.Model):
         ("Active", "Active"),
         ("Inactive", "Inactive"),
     )
-    status = models.CharField(max_length=100, choices=STATUS)
+    status = models.CharField(max_length=100, choices=STATUS,default="Active")
 
     def __str__(self):
         return self.name
@@ -96,7 +96,7 @@ class ClassAttendance(models.Model):
         ("Present", "Present"),
         ("Absent", "Absent"),
     )
-    status = models.CharField(max_length=100, choices=STATUS)
+    status = models.CharField(max_length=100, choices=STATUS,default="Absent")
 
     def __str__(self):
         return self.status
@@ -111,7 +111,7 @@ class StaffAttendance(models.Model):
         ("Present", "Present"),
         ("Absent", "Absent"),
     )
-    status = models.CharField(max_length=100, choices=STATUS)
+    status = models.CharField(max_length=100, choices=STATUS,default="Absent")
 
     def __str__(self):
         return self.status

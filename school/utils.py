@@ -78,7 +78,12 @@ class Admitter:
 
     def add_employee(self, fullname, department):
         try:
-            emp = Employees.objects.create(full_name=fullname, department=department)
+            dep = Department.objects.get(department_id=department)
+            if not dep:
+                return JsonResponse(
+                    {"success": False, "info": "Department does not exist"}
+                )
+            emp = Employees.objects.create(full_name=fullname, department=dep)
             if emp:
                 return JsonResponse(
                     {"success": True, "info": "Employee added successfully"}
@@ -201,7 +206,7 @@ class Admitter:
                     subject = Subject.objects.get(id=subject_id)
                     tutor.subjects.add(subject)
             if isinstance(subjects, str):
-                subject = Subject.objects.get(name=subjects)
+                subject = Subject.objects.get(subject_name=subjects)
                 tutor.subjects.add(subject)
 
             return JsonResponse({"success": True, "info": "Tutor created successfully"})

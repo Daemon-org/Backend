@@ -3,6 +3,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from CRMS.decorators import check_fields, token_required
 from django.views.decorators.http import require_POST, require_GET
+from django.views.decorators.csrf import csrf_exempt
 import logging
 
 logger = logging.getLogger(__name__)
@@ -23,6 +24,7 @@ def get_departments(request):
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
 
 
+@csrf_exempt
 @token_required
 @require_POST
 @check_fields(["name", "role", "head_name"])
@@ -39,7 +41,7 @@ def create_department(request):
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
 
-
+@csrf_exempt
 @require_POST
 @token_required
 @check_fields(["department_id"])
@@ -66,7 +68,7 @@ def get_employees(request):
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
 
-
+@csrf_exempt
 @require_POST
 @token_required
 @check_fields(["full_name", "department"])
@@ -82,7 +84,7 @@ def add_employee(request):
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
 
-
+@csrf_exempt
 @require_POST
 @token_required
 @check_fields(["employee_id"])
@@ -93,7 +95,7 @@ def update_employee(request):
         full_name = data.get("full_name")
         department = data.get("department")
         status = data.get("status")
-        update = admit.update_employee(full_name, department, status)
+        update = admit.update_employee(employee_id,full_name, department, status)
         return update
     except Exception as e:
         logger.warning(str(e))
@@ -109,7 +111,7 @@ def get_subjects(request):
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
 
-
+@csrf_exempt
 @require_POST
 @token_required
 @check_fields(["name", "description"])
@@ -125,7 +127,7 @@ def add_subjects(request):
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
 
-
+@csrf_exempt
 @require_POST
 @token_required
 @check_fields(["subject_id"])
@@ -154,7 +156,7 @@ def get_teachers(request):
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
 
-
+@csrf_exempt
 @require_POST
 @token_required
 @check_fields(["full_name", "subjects", "department_id"])
@@ -171,7 +173,7 @@ def add_teachers(request):
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
 
-
+@csrf_exempt
 @require_POST
 @token_required
 @check_fields(["tutor_id"])
@@ -198,7 +200,7 @@ def get_classrooms(request):
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
 
-
+@csrf_exempt
 @require_POST
 @token_required
 @check_fields(["teacher_id", "grade", "capacity"])
@@ -215,7 +217,7 @@ def add_classrooms(request):
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
 
-
+@csrf_exempt
 @require_POST
 @token_required
 @check_fields(["classroom_id"])
@@ -243,7 +245,7 @@ def get_students(request):
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
 
-
+@csrf_exempt
 @require_POST
 @token_required
 @check_fields(
@@ -278,7 +280,7 @@ def add_students(request):
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
 
-
+@csrf_exempt
 @require_POST
 @token_required
 @check_fields(["student_id"])
@@ -313,7 +315,7 @@ def update_students(request):
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
 
-
+@csrf_exempt
 @require_POST
 @token_required
 @check_fields(["student_id", "class_room", "status"])
@@ -330,7 +332,7 @@ def mark_student_attendance(request):
         logger.warning(str(e))
         return JsonResponse({"success": False, "info": "Kindly try again --p2prx2--"})
 
-
+@csrf_exempt
 @require_POST
 @token_required
 @check_fields(["employee", "department"])
