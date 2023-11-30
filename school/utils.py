@@ -245,9 +245,9 @@ class Admitter:
                 {"success": False, "info": "Kindly try again --p2prx2--"}
             )
 
-    def add_classroom(self, techer_id, grade, capacity):
+    def add_classroom(self, teacher_id, grade, capacity):
         try:
-            teach = Tutor.objects.get(tutor_id=techer_id)
+            teach = Tutor.objects.get(tutor_id=teacher_id)
             if not teach:
                 return JsonResponse({"success": False, "info": "Tutor does not exist"})
 
@@ -419,7 +419,7 @@ class Admitter:
                 return JsonResponse(
                     {"success": False, "info": "Classroom does not exist"}
                 )
-            
+
             now = arrow.now().datetime
             attendance = ClassAttendance.objects.create(
                 student=student, class_room=class_room, date=now, status=status
@@ -437,10 +437,10 @@ class Admitter:
             return JsonResponse(
                 {"success": False, "info": "Kindly try again --p2prx2--"}
             )
-    
+
     # TODO:add an endpoint foe getting class attendance by the date
-    
-    def mark_school_attendance(self,employee,department):
+
+    def mark_staff_attendance(self, employee, department):
         try:
             employee = Employees.objects.get(employee_id=employee)
             if not employee:
@@ -453,7 +453,7 @@ class Admitter:
                 return JsonResponse(
                     {"success": False, "info": "Department does not exist"}
                 )
-            
+
             now = arrow.now().datetime
             attendance = StaffAttendance.objects.create(
                 employee=employee, department=department, date=now
@@ -471,4 +471,5 @@ class Admitter:
             return JsonResponse(
                 {"success": False, "info": "Kindly try again --p2prx2--"}
             )
+
     # TODO:add the endpoints for the curriculum and timetable and also add the class for fee payments and stuff
